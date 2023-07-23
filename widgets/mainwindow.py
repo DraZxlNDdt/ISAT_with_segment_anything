@@ -204,7 +204,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             files = []
             suffixs = tuple(['{}'.format(fmt.data().decode('ascii').lower()) for fmt in QtGui.QImageReader.supportedImageFormats()])
             for f in os.listdir(dir):
-                if f.lower().endswith(suffixs):
+                if f.lower().endswith(suffixs) and not f.lower().startswith('clipseg_'):
                     # f = os.path.join(dir, f)
                     files.append(f)
             files = sorted(files)
@@ -259,6 +259,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.polygons.clear()
             self.labels_dock_widget.listWidget.clear()
             self.scene.cancel_draw()
+            self.image_filename = self.files_list[index]
             file_path = os.path.join(self.image_root, self.files_list[index])
             image_data = Image.open(file_path)
 
@@ -415,6 +416,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 polygon.change_color(QtGui.QColor(self.category_color_dict.get(polygon.category, '#000000')))
                 polygon.color.setAlpha(255)
                 polygon.setBrush(polygon.color)
+            
+            self.scene.basic_annotation_item.setOpacity(1)
             self.labels_dock_widget.listWidget.setEnabled(False)
             self.labels_dock_widget.checkBox_visible.setEnabled(False)
             self.actionSegment_anything.setEnabled(False)
@@ -427,30 +430,30 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.actionBit_map.setIcon(semantic_icon)
 
         elif self.map_mode == MAPMode.SEMANTIC:
-            # to instance
-            for polygon in self.polygons:
-                polygon.setEnabled(False)
-                for vertex in polygon.vertexs:
-                    vertex.setVisible(False)
-                if polygon.group != '':
-                    rgb = self.instance_cmap[int(polygon.group)]
-                else:
-                    rgb = self.instance_cmap[0]
-                polygon.change_color(QtGui.QColor(rgb[0], rgb[1], rgb[2], 255))
-                polygon.color.setAlpha(255)
-                polygon.setBrush(polygon.color)
-            self.labels_dock_widget.listWidget.setEnabled(False)
-            self.labels_dock_widget.checkBox_visible.setEnabled(False)
-            self.actionSegment_anything.setEnabled(False)
-            self.actionCLIPSEG.setEnabled(False)
-            self.actionPolygon.setEnabled(False)
-            self.actionVisible.setEnabled(False)
-            self.map_mode = MAPMode.INSTANCE
-            instance_icon = QtGui.QIcon()
-            instance_icon.addPixmap(QtGui.QPixmap(":/icon/icons/instance.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-            self.actionBit_map.setIcon(instance_icon)
+        #     # to instance
+        #     for polygon in self.polygons:
+        #         polygon.setEnabled(False)
+        #         for vertex in polygon.vertexs:
+        #             vertex.setVisible(False)
+        #         if polygon.group != '':
+        #             rgb = self.instance_cmap[int(polygon.group)]
+        #         else:
+        #             rgb = self.instance_cmap[0]
+        #         polygon.change_color(QtGui.QColor(rgb[0], rgb[1], rgb[2], 255))
+        #         polygon.color.setAlpha(255)
+        #         polygon.setBrush(polygon.color)
+        #     self.labels_dock_widget.listWidget.setEnabled(False)
+        #     self.labels_dock_widget.checkBox_visible.setEnabled(False)
+        #     self.actionSegment_anything.setEnabled(False)
+        #     self.actionCLIPSEG.setEnabled(False)
+        #     self.actionPolygon.setEnabled(False)
+        #     self.actionVisible.setEnabled(False)
+        #     self.map_mode = MAPMode.INSTANCE
+        #     instance_icon = QtGui.QIcon()
+        #     instance_icon.addPixmap(QtGui.QPixmap(":/icon/icons/instance.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        #     self.actionBit_map.setIcon(instance_icon)
 
-        elif self.map_mode == MAPMode.INSTANCE:
+        # elif self.map_mode == MAPMode.INSTANCE:
             # to label
             for polygon in self.polygons:
                 polygon.setEnabled(True)
@@ -460,6 +463,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 polygon.change_color(QtGui.QColor(self.category_color_dict.get(polygon.category, '#000000')))
                 polygon.color.setAlpha(polygon.nohover_alpha)
                 polygon.setBrush(polygon.color)
+            self.scene.basic_annotation_item.setOpacity(0.23)
             self.labels_dock_widget.listWidget.setEnabled(True)
             self.labels_dock_widget.checkBox_visible.setEnabled(True)
             self.actionSegment_anything.setEnabled(self.use_segment_anything)

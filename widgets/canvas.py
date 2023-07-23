@@ -8,7 +8,8 @@ from configs import STATUSMode, CLICKMode, DRAWMode
 from PIL import Image
 import numpy as np
 import cv2
-
+import os
+import time
 class AnnotationScene(QtWidgets.QGraphicsScene):
     def __init__(self, mainwindow):
         super(AnnotationScene, self).__init__()
@@ -53,8 +54,14 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mask_item = QtWidgets.QGraphicsPixmapItem()
         self.mask_item.setZValue(1)
         self.addItem(self.mask_item)
+        self.basic_annotation_item = QtWidgets.QGraphicsPixmapItem()
+        self.basic_annotation_item.setZValue(1)
+        self.basic_annotation_item.setOpacity(0.23)
+        self.addItem(self.basic_annotation_item)
 
         self.image_item.setPixmap(QtGui.QPixmap(image_path))
+        clipseg_path = os.path.join(os.path.dirname(image_path), 'clipseg_'+os.path.basename(image_path))
+        self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
         self.setSceneRect(self.image_item.boundingRect())
         self.change_mode_to_view()
 
@@ -141,7 +148,8 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
     def start_CLIPSEG(self):
         self.mainwindow.segany.switch_to_cpu()
-        self.mainwindow.clipseg.predict()
+        final_img, clipseg_path = self.mainwindow.clipseg.predict(self.mainwindow.label_root, self.mainwindow.image_filename)
+        self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
         self.mainwindow.segany.switch_to_device()
 
     def start_draw_polygon(self):

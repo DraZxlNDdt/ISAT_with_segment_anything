@@ -4,7 +4,7 @@
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageQt
 
 from torchmetrics.classification import MulticlassConfusionMatrix
 from torchmetrics.classification import MulticlassJaccardIndex
@@ -31,20 +31,18 @@ class CLIPSEG:
         self.image = None
         torch.cuda.empty_cache()
 
-    def save(self, image_np, final_pred, file_name, threshold_list = [0.3]):
+    def save(self, image_np, final_pred, file_path, threshold = 0.3):
         image_ori = Image.fromarray(image_np)
         prob, pred = final_pred.max(dim=0)
         pred += 1
         # 置信度低的标签为背景
 
-        for threshold in threshold_list:
-            # ans_map[prob<threshold] = 255
-            # img = Image.fromarray(ans_map.cpu().numpy(), mode='RGB')
-            # display(Image.blend(image_ori, img, 0.6))
-            pred[prob<threshold] = 0
-            ans_map = self.color[pred]
-            img = Image.fromarray(ans_map.cpu().numpy(), mode='RGB')
-            img.save('Result/'+file_name)
+        pred[prob<threshold] = 0
+        ans_map = self.color[pred]
+        img = Image.fromarray(ans_map.cpu().numpy(), mode='RGB')
+        img.save(file_path)
+        return img, file_path
+
 
     def get_pred(self, image_np, debug=0):
         step = 352
@@ -68,15 +66,14 @@ class CLIPSEG:
         final_pred = final_pred[:, :image_ori.height, :image_ori.width]
         return final_pred.sigmoid()
 
-    def predict(self):
-        threshold_list = [0.3, 0.4, 0.5]
+    def predict(self, root, filename):
         img = self.image
         pred = self.get_pred(img)
-        self.save(img, pred, 'bb.jpg', threshold_list)
-        prob, y_pred = pred.max(dim=0)
-        y_pred += 1
+        final_img, clipseg_path = self.save(img, pred, os.path.join(root, 'clipseg_'+filename))
         img = None
         torch.cuda.empty_cache()
+        return final_img, clipseg_path
+
 
 if __name__ == "__main__":
     cs = CLIPSEG()
