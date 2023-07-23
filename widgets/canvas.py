@@ -9,7 +9,6 @@ from PIL import Image
 import numpy as np
 import cv2
 
-
 class AnnotationScene(QtWidgets.QGraphicsScene):
     def __init__(self, mainwindow):
         super(AnnotationScene, self).__init__()
@@ -28,6 +27,10 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.guide_line_x:QtWidgets.QGraphicsLineItem = None
         self.guide_line_y:QtWidgets.QGraphicsLineItem = None
 
+    def set_image(self):
+        self.mainwindow.segany.set_image(self.image_data)
+        self.mainwindow.clipseg.set_image(self.image_data)
+
     def load_image(self, image_path:str):
         self.clear()
         if self.mainwindow.use_segment_anything:
@@ -36,11 +39,11 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.image_data = np.array(Image.open(image_path))
         if self.mainwindow.use_segment_anything and self.mainwindow.can_be_annotated:
             if self.image_data.ndim == 3 and self.image_data.shape[-1] == 3: # 三通道图
-                self.mainwindow.segany.set_image(self.image_data)
+                self.set_image()
             elif self.image_data.ndim == 2: # 单通道图
                 self.image_data = self.image_data[:, :, np.newaxis]
                 self.image_data = np.repeat(self.image_data, 3, axis=2) # 转换为三通道
-                self.mainwindow.segany.set_image(self.image_data)
+                self.set_image()
             else:
                 self.mainwindow.statusbar.showMessage("Segment anything don't support the image with {} ndim.".format(self.image_data.ndim))
                 
@@ -64,6 +67,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionNext.setEnabled(False)
 
         self.mainwindow.actionSegment_anything.setEnabled(False)
+        self.mainwindow.actionCLIPSEG.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(True)
         self.mainwindow.actionFinish.setEnabled(True)
@@ -86,6 +90,8 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionNext.setEnabled(True)
 
         self.mainwindow.actionSegment_anything.setEnabled(self.mainwindow.use_segment_anything and self.mainwindow.can_be_annotated)
+        self.mainwindow.actionCLIPSEG.setEnabled(True)
+
         if self.mainwindow.use_segment_anything and self.mainwindow.segany.image is None:
             self.mainwindow.actionSegment_anything.setEnabled(False)
 
@@ -111,6 +117,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionNext.setEnabled(False)
 
         self.mainwindow.actionSegment_anything.setEnabled(False)
+        self.mainwindow.actionCLIPSEG.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(False)
         self.mainwindow.actionFinish.setEnabled(False)
@@ -131,6 +138,11 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
     def start_segment_anything(self):
         self.draw_mode = DRAWMode.SEGMENTANYTHING
         self.start_draw()
+
+    def start_CLIPSEG(self):
+        self.mainwindow.segany.switch_to_cpu()
+        self.mainwindow.clipseg.predict()
+        self.mainwindow.segany.switch_to_device()
 
     def start_draw_polygon(self):
         self.draw_mode = DRAWMode.POLYGON

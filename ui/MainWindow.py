@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/super/PycharmProjects/ISAT_with_segment_anything/ui/MainWindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setEnabled(True)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1280, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1280, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
@@ -268,6 +268,8 @@ class Ui_MainWindow(object):
         icon26.addPixmap(QtGui.QPixmap(":/icon/icons/labelme_32x32.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionTo_LabelMe.setIcon(icon26)
         self.actionTo_LabelMe.setObjectName("actionTo_LabelMe")
+        self.actionCLIPSEG = QtWidgets.QAction(MainWindow)
+        self.actionCLIPSEG.setObjectName("actionCLIPSEG")
         self.menuFile.addAction(self.actionOpen_dir)
         self.menuFile.addAction(self.actionSave_dir)
         self.menuFile.addSeparator()
@@ -331,6 +333,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionFit_wiondow)
         self.toolBar.addAction(self.actionBit_map)
         self.toolBar.addAction(self.actionVisible)
+        self.toolBar.addAction(self.actionCLIPSEG)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -433,4 +436,6 @@ class Ui_MainWindow(object):
         self.actionTo_LabelMe.setText(_translate("MainWindow", "To LabelMe"))
         self.actionTo_LabelMe.setToolTip(_translate("MainWindow", "Convert ISAT to LabelMe"))
         self.actionTo_LabelMe.setStatusTip(_translate("MainWindow", "Convert ISAT jsons to LabelMe jsons."))
+        self.actionCLIPSEG.setText(_translate("MainWindow", "CLIPSEG"))
+        self.actionCLIPSEG.setToolTip(_translate("MainWindow", "CLIPSEG"))
 import icons_rc

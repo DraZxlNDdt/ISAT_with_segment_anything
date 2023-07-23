@@ -23,6 +23,13 @@ class SegAny:
         self.predictor = SamPredictor(sam)
         self.image = None
 
+    def switch_to_cpu(self):
+        self.predictor.model = self.predictor.model.to('cpu')
+        torch.cuda.empty_cache()
+
+    def switch_to_device(self):
+        self.predictor.model = self.predictor.model.to(self.device)
+
     def set_image(self, image):
         self.image = image
         self.predictor.set_image(image)

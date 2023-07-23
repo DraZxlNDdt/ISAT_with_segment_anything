@@ -27,6 +27,7 @@ import imgviz
 from segment_any.segment_any import SegAny
 from segment_any.gpu_resource import GPUResource_Thread, osplatform
 import icons_rc
+from clipseg.clipseg import CLIPSEG
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -58,6 +59,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.init_connect()
         self.reset_action()
         self.init_segment_anything()
+        self.clipseg = CLIPSEG()
 
     def init_segment_anything(self):
         if os.path.exists('./segment_any/sam_vit_h_4b8939.pth'):
@@ -270,6 +272,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             if self.can_be_annotated:
                 self.actionSegment_anything.setEnabled(self.use_segment_anything)
+                self.actionCLIPSEG.setEnabled(True)
                 self.actionPolygon.setEnabled(True)
                 self.actionSave.setEnabled(True)
                 self.actionBit_map.setEnabled(True)
@@ -279,6 +282,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.actionVisible.setEnabled(True)
             else:
                 self.actionSegment_anything.setEnabled(False)
+                self.actionCLIPSEG.setEnabled(False)
                 self.actionPolygon.setEnabled(False)
                 self.actionSave.setEnabled(False)
                 self.actionBit_map.setEnabled(False)
@@ -414,6 +418,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.labels_dock_widget.listWidget.setEnabled(False)
             self.labels_dock_widget.checkBox_visible.setEnabled(False)
             self.actionSegment_anything.setEnabled(False)
+            self.actionCLIPSEG.setEnabled(False)
             self.actionPolygon.setEnabled(False)
             self.actionVisible.setEnabled(False)
             self.map_mode = MAPMode.SEMANTIC
@@ -437,6 +442,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.labels_dock_widget.listWidget.setEnabled(False)
             self.labels_dock_widget.checkBox_visible.setEnabled(False)
             self.actionSegment_anything.setEnabled(False)
+            self.actionCLIPSEG.setEnabled(False)
             self.actionPolygon.setEnabled(False)
             self.actionVisible.setEnabled(False)
             self.map_mode = MAPMode.INSTANCE
@@ -457,6 +463,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.labels_dock_widget.listWidget.setEnabled(True)
             self.labels_dock_widget.checkBox_visible.setEnabled(True)
             self.actionSegment_anything.setEnabled(self.use_segment_anything)
+            self.actionCLIPSEG.setEnabled(True)
             self.actionPolygon.setEnabled(True)
             self.actionVisible.setEnabled(True)
             self.map_mode = MAPMode.LABEL
@@ -513,6 +520,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionExit.triggered.connect(self.exit)
 
         self.actionSegment_anything.triggered.connect(self.scene.start_segment_anything)
+        self.actionCLIPSEG.triggered.connect(self.scene.start_CLIPSEG)
         self.actionPolygon.triggered.connect(self.scene.start_draw_polygon)
         self.actionCancel.triggered.connect(self.scene.cancel_draw)
         self.actionBackspace.triggered.connect(self.scene.backspace)
@@ -546,6 +554,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionPrev.setEnabled(False)
         self.actionNext.setEnabled(False)
         self.actionSegment_anything.setEnabled(False)
+        self.actionCLIPSEG.setEnabled(False)
         self.actionPolygon.setEnabled(False)
         self.actionEdit.setEnabled(False)
         self.actionDelete.setEnabled(False)

@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
    <property name="font">
@@ -239,6 +239,7 @@
    <addaction name="actionFit_wiondow"/>
    <addaction name="actionBit_map"/>
    <addaction name="actionVisible"/>
+   <addaction name="actionCLIPSEG"/>
   </widget>
   <widget class="QDockWidget" name="info_dock">
    <property name="minimumSize">
@@ -749,6 +750,14 @@
    </property>
    <property name="statusTip">
     <string>Convert ISAT jsons to LabelMe jsons.</string>
+   </property>
+  </action>
+  <action name="actionCLIPSEG">
+   <property name="text">
+    <string>CLIPSEG</string>
+   </property>
+   <property name="toolTip">
+    <string>CLIPSEG</string>
    </property>
   </action>
  </widget>
