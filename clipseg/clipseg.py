@@ -4,11 +4,7 @@
 from transformers import CLIPSegProcessor, CLIPSegForImageSegmentation
 import torch
 import numpy as np
-from PIL import Image, ImageQt
-
-from torchmetrics.classification import MulticlassConfusionMatrix
-from torchmetrics.classification import MulticlassJaccardIndex
-import glob
+from PIL import Image
 import os
 
 
@@ -16,11 +12,12 @@ class CLIPSEG:
     def __init__(self):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
-        self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined").to(self.device)
+        self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.image = None
         colors_pattern = [[255, 255, 255], [255, 0, 0], [255, 255, 0], [0, 0, 255], [159, 129, 183], [0, 255, 0], [255, 195, 128]]
         self.color = torch.tensor(colors_pattern, dtype=torch.uint8).to(self.device)
         self.prompts = list(('building', 'road', 'water', 'barren', 'forest', 'agricultural'))
+        self.prompts = list(('building', 'tree', 'flower', 'road', 'sky', 'agricultural'))
         self.class_num = len(self.prompts)
         threshold = 0.3
 
@@ -67,14 +64,11 @@ class CLIPSEG:
         return final_pred.sigmoid()
 
     def predict(self, root, filename):
+        self.model = self.model.to(self.device)
         img = self.image
         pred = self.get_pred(img)
-        final_img, clipseg_path = self.save(img, pred, os.path.join(root, 'clipseg_'+filename))
+        final_img, clipseg_path = self.save(img, pred, os.path.join(root, 'bss_'+filename))
         img = None
+        self.model = self.model.to('cpu')
         torch.cuda.empty_cache()
         return final_img, clipseg_path
-
-
-if __name__ == "__main__":
-    cs = CLIPSEG()
-    cs.predict()

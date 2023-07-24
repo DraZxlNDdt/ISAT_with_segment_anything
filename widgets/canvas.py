@@ -31,11 +31,15 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
     def set_image(self):
         self.mainwindow.segany.set_image(self.image_data)
         self.mainwindow.clipseg.set_image(self.image_data)
+        self.mainwindow.rvsa.set_image(self.image_data)
 
     def load_image(self, image_path:str):
         self.clear()
         if self.mainwindow.use_segment_anything:
             self.mainwindow.segany.reset_image()
+        self.mainwindow.clipseg.reset_image()
+        self.mainwindow.rvsa.reset_image()
+
 
         self.image_data = np.array(Image.open(image_path))
         if self.mainwindow.use_segment_anything and self.mainwindow.can_be_annotated:
@@ -60,7 +64,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.addItem(self.basic_annotation_item)
 
         self.image_item.setPixmap(QtGui.QPixmap(image_path))
-        clipseg_path = os.path.join(os.path.dirname(image_path), 'clipseg_'+os.path.basename(image_path))
+        clipseg_path = os.path.join(os.path.dirname(image_path), 'bss_'+os.path.basename(image_path))
         self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
         self.setSceneRect(self.image_item.boundingRect())
         self.change_mode_to_view()
@@ -75,6 +79,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
         self.mainwindow.actionSegment_anything.setEnabled(False)
         self.mainwindow.actionCLIPSEG.setEnabled(False)
+        self.mainwindow.actionRVSA.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(True)
         self.mainwindow.actionFinish.setEnabled(True)
@@ -98,6 +103,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
         self.mainwindow.actionSegment_anything.setEnabled(self.mainwindow.use_segment_anything and self.mainwindow.can_be_annotated)
         self.mainwindow.actionCLIPSEG.setEnabled(True)
+        self.mainwindow.actionRVSA.setEnabled(True)
 
         if self.mainwindow.use_segment_anything and self.mainwindow.segany.image is None:
             self.mainwindow.actionSegment_anything.setEnabled(False)
@@ -125,6 +131,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
         self.mainwindow.actionSegment_anything.setEnabled(False)
         self.mainwindow.actionCLIPSEG.setEnabled(False)
+        self.mainwindow.actionRVSA.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(False)
         self.mainwindow.actionFinish.setEnabled(False)
@@ -149,6 +156,12 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
     def start_CLIPSEG(self):
         self.mainwindow.segany.switch_to_cpu()
         final_img, clipseg_path = self.mainwindow.clipseg.predict(self.mainwindow.label_root, self.mainwindow.image_filename)
+        self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
+        self.mainwindow.segany.switch_to_device()
+
+    def start_RVSA(self):
+        self.mainwindow.segany.switch_to_cpu()
+        final_img, clipseg_path = self.mainwindow.rvsa.predict(self.mainwindow.label_root, self.mainwindow.image_filename)
         self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
         self.mainwindow.segany.switch_to_device()
 
@@ -428,6 +441,12 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
             # 移除随鼠标移动的点
             self.current_graph.removePoint(len(self.current_graph.points) - 2)
 
+
+    def set_basic_visible(self, visible):
+        if (visible):
+            self.basic_annotation_item.setOpacity(0.23)
+        else:
+            self.basic_annotation_item.setOpacity(0)
 
 class AnnotationView(QtWidgets.QGraphicsView):
     def __init__(self, parent=None):

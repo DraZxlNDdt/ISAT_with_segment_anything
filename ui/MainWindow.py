@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file '.\MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -270,6 +270,8 @@ class Ui_MainWindow(object):
         self.actionTo_LabelMe.setObjectName("actionTo_LabelMe")
         self.actionCLIPSEG = QtWidgets.QAction(MainWindow)
         self.actionCLIPSEG.setObjectName("actionCLIPSEG")
+        self.actionRVSA = QtWidgets.QAction(MainWindow)
+        self.actionRVSA.setObjectName("actionRVSA")
         self.menuFile.addAction(self.actionOpen_dir)
         self.menuFile.addAction(self.actionSave_dir)
         self.menuFile.addSeparator()
@@ -334,6 +336,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionBit_map)
         self.toolBar.addAction(self.actionVisible)
         self.toolBar.addAction(self.actionCLIPSEG)
+        self.toolBar.addAction(self.actionRVSA)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -438,4 +441,5 @@ class Ui_MainWindow(object):
         self.actionTo_LabelMe.setStatusTip(_translate("MainWindow", "Convert ISAT jsons to LabelMe jsons."))
         self.actionCLIPSEG.setText(_translate("MainWindow", "CLIPSEG"))
         self.actionCLIPSEG.setToolTip(_translate("MainWindow", "CLIPSEG"))
+        self.actionRVSA.setText(_translate("MainWindow", "RVSA"))
 import icons_rc

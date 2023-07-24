@@ -240,6 +240,7 @@
    <addaction name="actionBit_map"/>
    <addaction name="actionVisible"/>
    <addaction name="actionCLIPSEG"/>
+   <addaction name="actionRVSA"/>
   </widget>
   <widget class="QDockWidget" name="info_dock">
    <property name="minimumSize">
@@ -758,6 +759,11 @@
    </property>
    <property name="toolTip">
     <string>CLIPSEG</string>
+   </property>
+  </action>
+  <action name="actionRVSA">
+   <property name="text">
+    <string>RVSA</string>
    </property>
   </action>
  </widget>

@@ -28,6 +28,7 @@ from segment_any.segment_any import SegAny
 from segment_any.gpu_resource import GPUResource_Thread, osplatform
 import icons_rc
 from clipseg.clipseg import CLIPSEG
+from rvsa.rvsa import RVSA
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -60,6 +61,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.reset_action()
         self.init_segment_anything()
         self.clipseg = CLIPSEG()
+        self.rvsa = RVSA()
 
     def init_segment_anything(self):
         if os.path.exists('./segment_any/sam_vit_h_4b8939.pth'):
@@ -204,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             files = []
             suffixs = tuple(['{}'.format(fmt.data().decode('ascii').lower()) for fmt in QtGui.QImageReader.supportedImageFormats()])
             for f in os.listdir(dir):
-                if f.lower().endswith(suffixs) and not f.lower().startswith('clipseg_'):
+                if f.lower().endswith(suffixs) and not f.lower().startswith('bss_'):
                     # f = os.path.join(dir, f)
                     files.append(f)
             files = sorted(files)
@@ -274,6 +276,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.can_be_annotated:
                 self.actionSegment_anything.setEnabled(self.use_segment_anything)
                 self.actionCLIPSEG.setEnabled(True)
+                self.actionRVSA.setEnabled(True)
                 self.actionPolygon.setEnabled(True)
                 self.actionSave.setEnabled(True)
                 self.actionBit_map.setEnabled(True)
@@ -284,6 +287,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 self.actionSegment_anything.setEnabled(False)
                 self.actionCLIPSEG.setEnabled(False)
+                self.actionRVSA.setEnabled(False)
                 self.actionPolygon.setEnabled(False)
                 self.actionSave.setEnabled(False)
                 self.actionBit_map.setEnabled(False)
@@ -422,6 +426,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.labels_dock_widget.checkBox_visible.setEnabled(False)
             self.actionSegment_anything.setEnabled(False)
             self.actionCLIPSEG.setEnabled(False)
+            self.actionRVSA.setEnabled(False)
             self.actionPolygon.setEnabled(False)
             self.actionVisible.setEnabled(False)
             self.map_mode = MAPMode.SEMANTIC
@@ -468,6 +473,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.labels_dock_widget.checkBox_visible.setEnabled(True)
             self.actionSegment_anything.setEnabled(self.use_segment_anything)
             self.actionCLIPSEG.setEnabled(True)
+            self.actionRVSA.setEnabled(True)
             self.actionPolygon.setEnabled(True)
             self.actionVisible.setEnabled(True)
             self.map_mode = MAPMode.LABEL
@@ -480,6 +486,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def set_labels_visible(self, visible=None):
         if visible is None:
             visible = not self.labels_dock_widget.checkBox_visible.isChecked()
+        self.scene.set_basic_visible(visible) # 设置全自动分割结果是否可见
         self.labels_dock_widget.checkBox_visible.setChecked(visible)
         self.labels_dock_widget.set_all_polygon_visible(visible)
 
@@ -525,6 +532,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.actionSegment_anything.triggered.connect(self.scene.start_segment_anything)
         self.actionCLIPSEG.triggered.connect(self.scene.start_CLIPSEG)
+        self.actionRVSA.triggered.connect(self.scene.start_RVSA)
         self.actionPolygon.triggered.connect(self.scene.start_draw_polygon)
         self.actionCancel.triggered.connect(self.scene.cancel_draw)
         self.actionBackspace.triggered.connect(self.scene.backspace)
@@ -559,6 +567,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionNext.setEnabled(False)
         self.actionSegment_anything.setEnabled(False)
         self.actionCLIPSEG.setEnabled(False)
+        self.actionRVSA.setEnabled(False)
         self.actionPolygon.setEnabled(False)
         self.actionEdit.setEnabled(False)
         self.actionDelete.setEnabled(False)
