@@ -10,6 +10,8 @@ import numpy as np
 import cv2
 import os
 import time
+from PIL import Image
+
 class AnnotationScene(QtWidgets.QGraphicsScene):
     def __init__(self, mainwindow):
         super(AnnotationScene, self).__init__()
@@ -105,8 +107,8 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionCLIPSEG.setEnabled(True)
         self.mainwindow.actionRVSA.setEnabled(True)
 
-        if self.mainwindow.use_segment_anything and self.mainwindow.segany.image is None:
-            self.mainwindow.actionSegment_anything.setEnabled(False)
+        # if self.mainwindow.use_segment_anything and self.mainwindow.segany.image is None:
+        #     self.mainwindow.actionSegment_anything.setEnabled(False)
 
         self.mainwindow.actionPolygon.setEnabled(self.mainwindow.can_be_annotated)
         self.mainwindow.actionBackspace.setEnabled(False)
@@ -151,6 +153,8 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
 
     def start_segment_anything(self):
         self.draw_mode = DRAWMode.SEGMENTANYTHING
+        self.subimage_data = self.mainwindow.view.getImg()
+        self.mainwindow.segany.set_image(self.subimage_data)
         self.start_draw()
 
     def start_CLIPSEG(self):
@@ -322,6 +326,9 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
             sceneX = self.width()-1 if sceneX > self.width()-1 else sceneX
             sceneY = 0 if sceneY < 0 else sceneY
             sceneY = self.height()-1 if sceneY > self.height()-1 else sceneY
+            if (self.draw_mode == DRAWMode.SEGMENTANYTHING):
+                sceneX -= self.offset[1]
+                sceneY -= self.offset[0]
 
             if event.button() == QtCore.Qt.MouseButton.LeftButton:
                 if self.draw_mode == DRAWMode.SEGMENTANYTHING:
@@ -405,10 +412,13 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
             return
 
         if len(self.click_points) > 0 and len(self.click_points_mode) > 0:
-            masks = self.mainwindow.segany.predict(self.click_points, self.click_points_mode)
+            masks = np.zeros(self.image_data.shape[:2], dtype=np.uint8)
+            submasks = self.mainwindow.segany.predict(self.click_points, self.click_points_mode)
+            self.mainwindow.view.implant(masks, submasks)
             self.masks = masks
             color = np.array([0, 0, 255])
             h, w = masks.shape[-2:]
+            # print(masks.reshape(h,w,1).shape, color.reshape(1,1,-1).shape)
             mask_image = masks.reshape(h, w, 1) * color.reshape(1, 1, -1)
             mask_image = mask_image.astype("uint8")
             mask_image = cv2.cvtColor(mask_image, cv2.COLOR_BGR2RGB)
@@ -476,6 +486,8 @@ class AnnotationView(QtWidgets.QGraphicsView):
         self.fitInView(0, 0, self.scene().width(), self.scene().height(),  QtCore.Qt.AspectRatioMode.KeepAspectRatio)
 
     def zoom(self, factor, point=None):
+        if (self.mainwindow.scene.draw_mode == DRAWMode.SEGMENTANYTHING and self.mainwindow.scene.mode == STATUSMode.CREATE):
+            return
         mouse_old = self.mapToScene(point) if point is not None else None
         # 缩放比例
 
@@ -486,6 +498,26 @@ class AnnotationView(QtWidgets.QGraphicsView):
         self.scale(factor, factor)
         if point is not None:
             mouse_now = self.mapToScene(point)
+            # print(mouse_old, mouse_now, self.mapToScene(0, 0), self.mapToScene(self.viewport().width(), self.viewport().height()))
             center_now = self.mapToScene(self.viewport().width() // 2, self.viewport().height() // 2)
             center_new = mouse_old - mouse_now + center_now
             self.centerOn(center_new)
+
+    # 将当前视图里的图片截取出来，以便后续丢给SAM
+    def getImg(self):
+        img = self.mainwindow.scene.image_data
+        left_top = self.mapToScene(0, 0).toPoint()
+        right_bottom = self.mapToScene(self.viewport().width(), self.viewport().height()).toPoint()
+        a, b, c, d = self.left, self.top, self.right, self.bottom = max(left_top.y(), 0), max(left_top.x(), 0), min(right_bottom.y(), img.shape[0]), min(right_bottom.x(), img.shape[1])
+        debug = True
+        if (debug):
+            print(left_top, right_bottom)
+            print(a, b, c, d)
+            print(type(a), type(c))
+            im = Image.fromarray(img[a:c, b:d])
+            im.save('jg.jpg')
+        self.mainwindow.scene.offset = (a, b)
+        return img[a:c, b:d]
+    
+    def implant(self, masks, submasks):
+        masks[self.left:self.right, self.top:self.bottom] = submasks

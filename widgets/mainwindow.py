@@ -113,6 +113,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.COCO_to_ISAT_dialog = COCOtoISATDialog(self, mainwindow=self)
 
         self.view = AnnotationView(parent=self)
+        self.view.mainwindow = self
         self.view.setScene(self.scene)
         self.setCentralWidget(self.view)
 

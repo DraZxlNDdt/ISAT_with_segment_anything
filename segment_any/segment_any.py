@@ -48,12 +48,13 @@ class SegAny:
             point_labels=input_label,
             multimask_output=True,
         )
-        mask_input = logits[np.argmax(scores), :, :]  # Choose the model's best mask
-        masks, _, _ = self.predictor.predict(
-            point_coords=input_point,
-            point_labels=input_label,
-            mask_input=mask_input[None, :, :],
-            multimask_output=False,
-        )
+        for _ in range(20):
+            mask_input = logits[np.argmax(scores), :, :]  # Choose the model's best mask
+            masks, scores, logits = self.predictor.predict(
+                point_coords=input_point,
+                point_labels=input_label,
+                mask_input=mask_input[None, :, :],
+                multimask_output=True,
+            )
         torch.cuda.empty_cache()
-        return masks
+        return masks[np.argmax(scores)]
