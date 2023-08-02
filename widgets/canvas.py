@@ -509,7 +509,7 @@ class AnnotationView(QtWidgets.QGraphicsView):
         left_top = self.mapToScene(0, 0).toPoint()
         right_bottom = self.mapToScene(self.viewport().width(), self.viewport().height()).toPoint()
         a, b, c, d = self.left, self.top, self.right, self.bottom = max(left_top.y(), 0), max(left_top.x(), 0), min(right_bottom.y(), img.shape[0]), min(right_bottom.x(), img.shape[1])
-        debug = True
+        debug = False
         if (debug):
             print(left_top, right_bottom)
             print(a, b, c, d)
