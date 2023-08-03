@@ -241,6 +241,7 @@
    <addaction name="actionVisible"/>
    <addaction name="actionCLIPSEG"/>
    <addaction name="actionRVSA"/>
+   <addaction name="actionSAMS"/>
   </widget>
   <widget class="QDockWidget" name="info_dock">
    <property name="minimumSize">
@@ -764,6 +765,11 @@
   <action name="actionRVSA">
    <property name="text">
     <string>RVSA</string>
+   </property>
+  </action>
+  <action name="actionSAMS">
+   <property name="text">
+    <string>SAMS</string>
    </property>
   </action>
  </widget>

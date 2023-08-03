@@ -272,6 +272,8 @@ class Ui_MainWindow(object):
         self.actionCLIPSEG.setObjectName("actionCLIPSEG")
         self.actionRVSA = QtWidgets.QAction(MainWindow)
         self.actionRVSA.setObjectName("actionRVSA")
+        self.actionSAMS = QtWidgets.QAction(MainWindow)
+        self.actionSAMS.setObjectName("actionSAMS")
         self.menuFile.addAction(self.actionOpen_dir)
         self.menuFile.addAction(self.actionSave_dir)
         self.menuFile.addSeparator()
@@ -337,6 +339,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionVisible)
         self.toolBar.addAction(self.actionCLIPSEG)
         self.toolBar.addAction(self.actionRVSA)
+        self.toolBar.addAction(self.actionSAMS)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -442,4 +445,5 @@ class Ui_MainWindow(object):
         self.actionCLIPSEG.setText(_translate("MainWindow", "CLIPSEG"))
         self.actionCLIPSEG.setToolTip(_translate("MainWindow", "CLIPSEG"))
         self.actionRVSA.setText(_translate("MainWindow", "RVSA"))
+        self.actionSAMS.setText(_translate("MainWindow", "SAMS"))
 import icons_rc

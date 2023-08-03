@@ -297,6 +297,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.actionCancel.setEnabled(False)
                 self.actionVisible.setEnabled(False)
 
+            self.img_basename = self.files_list[index]
             self.scene.load_image(file_path)
             self.view.zoomfit()
 
@@ -534,6 +535,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionSegment_anything.triggered.connect(self.scene.start_segment_anything)
         self.actionCLIPSEG.triggered.connect(self.scene.start_CLIPSEG)
         self.actionRVSA.triggered.connect(self.scene.start_RVSA)
+        self.actionSAMS.triggered.connect(self.scene.start_SAMS)
         self.actionPolygon.triggered.connect(self.scene.start_draw_polygon)
         self.actionCancel.triggered.connect(self.scene.cancel_draw)
         self.actionBackspace.triggered.connect(self.scene.backspace)
