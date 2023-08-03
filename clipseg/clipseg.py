@@ -14,12 +14,6 @@ class CLIPSEG:
         self.processor = CLIPSegProcessor.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.model = CLIPSegForImageSegmentation.from_pretrained("CIDAS/clipseg-rd64-refined")
         self.image = None
-        colors_pattern = [[255, 255, 255], [255, 0, 0], [255, 255, 0], [0, 0, 255], [159, 129, 183], [0, 255, 0], [255, 195, 128]]
-        self.color = torch.tensor(colors_pattern, dtype=torch.uint8).to(self.device)
-        self.prompts = list(('building', 'road', 'water', 'barren', 'forest', 'agricultural'))
-        self.prompts = list(('building', 'tree', 'flower', 'road', 'sky', 'agricultural'))
-        self.class_num = len(self.prompts)
-        threshold = 0.3
 
     def set_image(self, image):
         self.image = image
@@ -43,6 +37,10 @@ class CLIPSEG:
 
     def get_pred(self, image_np, debug=0):
         step = 352
+        colors_pattern = [[255, 255, 255], [255, 0, 0], [255, 255, 0], [0, 0, 255], [159, 129, 183], [0, 255, 0], [255, 195, 128]]
+        self.prompts = list(('building', 'road', 'water', 'barren', 'forest', 'agricultural'))
+        self.color = torch.tensor(colors_pattern, dtype=torch.uint8).to(self.device)
+        self.class_num = len(self.prompts)
         image_ori = Image.fromarray(image_np)
         final_shape = np.ceil(np.array(image_np.shape)[0:2]/step).astype(np.int32)*step
         final_shape = (self.class_num, final_shape[0], final_shape[1])

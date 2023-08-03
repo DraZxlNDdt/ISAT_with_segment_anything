@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : LG
 
-from segment_anything import sam_model_registry, SamPredictor
+from segment_anything import sam_model_registry, SamPredictor, SamAutomaticMaskGenerator
 import torch
 import numpy as np
 from PIL import Image
@@ -20,17 +20,17 @@ class SegAny:
             raise ValueError('The checkpoint named {} is not supported.'.format(checkpoint))
 
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        sam = sam_model_registry[self.model_type](checkpoint=checkpoint)
-        sam.to(device=self.device)
-        self.predictor = SamPredictor(sam)
+        self.sam = sam_model_registry[self.model_type](checkpoint=checkpoint)
+        self.sam.to(device=self.device)
+        self.predictor = SamPredictor(self.sam)
         self.image = None
 
     def switch_to_cpu(self):
-        self.predictor.model = self.predictor.model.to('cpu')
+        self.sam.to('cpu')
         torch.cuda.empty_cache()
 
     def switch_to_device(self):
-        self.predictor.model = self.predictor.model.to(self.device)
+        self.sam.to(self.device)
 
     def set_image(self, image):
         self.image = image
@@ -69,7 +69,7 @@ class SegAny:
     
     def update_patch(self, mask_generator, image, annotation, result, device, colors):
         masks = mask_generator.generate(image)
-
+        print('generated...')
         for mask in masks:
             mask["segmentation"] = torch.tensor(mask["segmentation"]).to(device)
             self.add_RGB_segment(result, mask["segmentation"], annotation, colors)
@@ -81,52 +81,32 @@ class SegAny:
             print('gg')
             return
         
-        return
-        mask_generator = None
-        COLOR_MAP = dict({
-            'background': (0, 0, 0),
-            'ship': (0, 0, 63),
-            'storage_tank': (0, 191, 127),
-            'baseball_diamond': (0, 63, 0),
-            'tennis_court': (0, 63, 127),
-            'basketball_court': (0, 63, 191),
-            'ground_Track_Field': (0, 63, 255),
-            'bridge': (0, 127, 63),
-            'large_Vehicle': (0, 127, 127),
-            'small_Vehicle': (0, 0, 127),
-            'helicopter': (0, 0, 191),
-            'swimming_pool': (0, 0, 255),
-            'roundabout': (0, 63, 63),
-            'soccer_ball_field': (0, 127, 191),
-            'plane': (0, 127, 255),
-            'harbor': (0, 100, 155),
-        })
-
-        colors = torch.tensor(list(COLOR_MAP.values()), dtype=torch.uint8).to(device)
+        mask_generator = SamAutomaticMaskGenerator(self.sam, points_per_side=64, points_per_batch=32)
+        device = self.device
+    
+        colors_pattern = [[255, 255, 255], [255, 0, 0], [255, 255, 0], [0, 0, 255],
+               [159, 129, 183], [0, 255, 0], [255, 195, 128]]
+        colors = torch.tensor(colors_pattern, dtype=torch.uint8).to(device)
         
-
         image = Image.open(image_path)
         image = np.array(image)
         if len(image.shape) == 2:
             image = np.stack([image] * 3, axis=2)
 
-        file_name = os.path.basename(image_path)
-
-        annotation = Image.open(os.path.join(segpath, file_name)).convert('RGB')
+        annotation = Image.open(seg_path).convert('RGB')
         annotation = np.array(annotation)
         annotation = torch.tensor(annotation).to(device)
-        result = torch.zeros_like(annotation).to(device)
+        result =  torch.full(annotation.shape, 255, dtype=torch.uint8).to(device)
         
         step = 1024
         for h_start in range(0, image.shape[0], step):
             for w_start in range(0, image.shape[1], step):
                 h_end = np.min([h_start+step, image.shape[0]])
                 w_end = np.min([w_start+step, image.shape[1]])
-                # print(h_start, h_end, w_start, w_end)
+                print(h_start, h_end, w_start, w_end, device)
                 self.update_patch(mask_generator, image[h_start:h_end, w_start:w_end], 
                             annotation[h_start:h_end, w_start:w_end], result[h_start:h_end, w_start:w_end], device, colors)
                 
-        save_path = segpath+'_fixed3_step='+str(step)+'_background=black_pps=64'
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-        Image.fromarray(result.cpu().numpy()).save(os.path.join(save_path, file_name))
+        save_path = os.path.join(image_root, 'bss_'+image_name)
+        Image.fromarray(result.cpu().numpy()).save(save_path)
+        return save_path

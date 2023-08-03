@@ -170,8 +170,9 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.segany.switch_to_device()
 
     def start_SAMS(self):
-        self.mainwindow.segany.run(self.mainwindow.image_root, self.mainwindow.img_basename)
-
+        clipseg_path = self.mainwindow.segany.run(self.mainwindow.image_root, self.mainwindow.img_basename)
+        self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
+        
     def start_draw_polygon(self):
         self.draw_mode = DRAWMode.POLYGON
         self.start_draw()
