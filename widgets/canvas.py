@@ -2,6 +2,7 @@
 # @Author  : LG
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import Qt, QCoreApplication
 from enum import Enum
 from widgets.polygon import Polygon
 from configs import STATUSMode, CLICKMode, DRAWMode
@@ -12,10 +13,18 @@ import os
 import time
 from PIL import Image
 
+from PyQt5.QtWidgets import QProgressDialog, QApplication
+
 class AnnotationScene(QtWidgets.QGraphicsScene):
     def __init__(self, mainwindow):
         super(AnnotationScene, self).__init__()
         self.mainwindow = mainwindow
+        self.progressDialog = QProgressDialog('正在运算，请等待', '取消', 0, 1, self.mainwindow)
+        self.progressDialog.setAutoClose(False)
+        self.progressDialog.setAutoReset(False)
+        self.progressDialog.setWindowModality(Qt.WindowModal)
+        self.progressDialog.setWindowTitle('Prompt')
+        self.progressDialog.close()
         self.image_item:QtWidgets.QGraphicsPixmapItem = None
         self.image_data = None
         self.current_graph:Polygon = None
@@ -82,6 +91,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionSegment_anything.setEnabled(False)
         self.mainwindow.actionCLIPSEG.setEnabled(False)
         self.mainwindow.actionRVSA.setEnabled(False)
+        self.mainwindow.actionSAMS.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(True)
         self.mainwindow.actionFinish.setEnabled(True)
@@ -106,6 +116,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionSegment_anything.setEnabled(self.mainwindow.use_segment_anything and self.mainwindow.can_be_annotated)
         self.mainwindow.actionCLIPSEG.setEnabled(True)
         self.mainwindow.actionRVSA.setEnabled(True)
+        self.mainwindow.actionSAMS.setEnabled(True)
 
         # if self.mainwindow.use_segment_anything and self.mainwindow.segany.image is None:
         #     self.mainwindow.actionSegment_anything.setEnabled(False)
@@ -134,6 +145,7 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.actionSegment_anything.setEnabled(False)
         self.mainwindow.actionCLIPSEG.setEnabled(False)
         self.mainwindow.actionRVSA.setEnabled(False)
+        self.mainwindow.actionSAMS.setEnabled(False)
         self.mainwindow.actionPolygon.setEnabled(False)
         self.mainwindow.actionBackspace.setEnabled(False)
         self.mainwindow.actionFinish.setEnabled(False)
@@ -170,8 +182,12 @@ class AnnotationScene(QtWidgets.QGraphicsScene):
         self.mainwindow.segany.switch_to_device()
 
     def start_SAMS(self):
+        self.progressDialog.setValue(0)
+        self.progressDialog.show()
+        QCoreApplication.processEvents()
         clipseg_path = self.mainwindow.segany.run(self.mainwindow.image_root, self.mainwindow.img_basename)
         self.basic_annotation_item.setPixmap(QtGui.QPixmap(clipseg_path))
+        self.progressDialog.close()
         
     def start_draw_polygon(self):
         self.draw_mode = DRAWMode.POLYGON
@@ -524,4 +540,4 @@ class AnnotationView(QtWidgets.QGraphicsView):
         return img[a:c, b:d]
     
     def implant(self, masks, submasks):
-        masks[self.left:self.right, self.top:self.bottom] = submasks
+        masks[self.left:self.right, self.top:self.bottom] = submasks 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Author  : LG
+# @Author  : LG, zengxl
 
 from PyQt5.QtCore import QThread, pyqtSignal
 from json import load
@@ -62,10 +62,21 @@ class TOVOC(QThread):
                 height = info.get('height', 0)
                 depth = info.get('depth', 0)
                 note = info.get('note', '')
+
                 img = np.zeros(shape=(height, width), dtype=np.uint8)
+                #print(img_name, self.from_root, json)
+                bss_path = os.path.join(self.from_root, 'bss_'+img_name)
+                if (os.path.exists(bss_path)):
+                    fz = np.array(Image.open(bss_path))
+                    #print(fz == cmap[0])
+                    #print((fz==cmap[0]).shape)
+                    for label_index in range(len(labels)):
+                        # print(cmap[label_index])
+                        img[(fz==cmap[label_index]).all(axis=-1)] = label_index
+                   # print(img.shape)
 
                 objects = sorted(objects, key=lambda obj:obj.get('layer', 1))
-
+                
                 for obj in objects:
                     category = obj.get('category', 'unknow')
                     group = obj.get('group', '')
